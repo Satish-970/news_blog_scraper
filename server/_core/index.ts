@@ -8,6 +8,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { initializeScheduler } from "../scheduler";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -44,6 +45,15 @@ async function startServer() {
       createContext,
     })
   );
+  // Initialize categories on startup
+  try {
+    const { getOrCreateCategories } = await import("../db");
+    await getOrCreateCategories();
+    console.log("[Server] Categories initialized");
+  } catch (error) {
+    console.warn("[Server] Could not initialize categories:", error);
+  }
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
@@ -60,6 +70,8 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // Initialize the daily scheduler for automated scraping
+    initializeScheduler();
   });
 }
 
