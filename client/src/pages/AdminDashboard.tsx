@@ -3,7 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Play, AlertCircle, CheckCircle, Clock, Zap } from "lucide-react";
+import { Loader2, Play, AlertCircle, CheckCircle, Clock, Zap, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
@@ -35,6 +35,18 @@ export default function AdminDashboard() {
   // Fetch scrape logs
   const { data: scrapeLogs, isLoading: logsLoading, refetch: refetchLogs } =
     trpc.admin.scrapeLogs.useQuery({ limit: 50 });
+
+  // Trigger scrape mutation
+  // Generate demo articles mutation
+  const generateDemo = trpc.admin.generateDemo.useMutation({
+    onSuccess: (data) => {
+      toast.success("Demo articles generated successfully!");
+      refetchLogs();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate demo articles");
+    },
+  });
 
   // Trigger scrape mutation
   const triggerScrape = trpc.admin.triggerScrape.useMutation({
@@ -163,25 +175,47 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              <Button
-                onClick={() =>
-                  triggerScrape.mutate({ categorySlug: selectedCategory || undefined })
-                }
-                disabled={triggerScrape.isPending}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 text-lg"
-              >
-                {triggerScrape.isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Running Pipeline...
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-5 h-5 mr-2" />
-                    Start Scrape Pipeline
-                  </>
-                )}
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={() =>
+                    triggerScrape.mutate({ categorySlug: selectedCategory || undefined })
+                  }
+                  disabled={triggerScrape.isPending}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 text-lg"
+                >
+                  {triggerScrape.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Running Pipeline...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5 mr-2" />
+                      Start Scrape Pipeline
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={() =>
+                    generateDemo.mutate({ categorySlug: selectedCategory || undefined })
+                  }
+                  disabled={generateDemo.isPending}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-lg"
+                >
+                  {generateDemo.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Generating Demo Articles...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5 mr-2" />
+                      Generate Demo Articles
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </Card>
         )}

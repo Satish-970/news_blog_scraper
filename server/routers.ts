@@ -17,6 +17,7 @@ import {
   getScrapeLogsByCategory,
 } from "./db";
 import { runScrapeAndPublishPipeline } from "./pipeline";
+import { generateAllDemoArticles, generateDemoArticles } from "./demoGenerator";
 
 // Admin-only procedure
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -114,6 +115,30 @@ export const appRouter = router({
   // ============ ADMIN ROUTERS ============
 
   admin: router({
+    // Generate demo articles for testing
+    generateDemo: adminProcedure
+      .input(
+        z.object({
+          categorySlug: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        try {
+          if (input.categorySlug) {
+            const result = await generateDemoArticles(input.categorySlug);
+            return result;
+          } else {
+            const results = await generateAllDemoArticles();
+            return { success: true, results };
+          }
+        } catch (error) {
+          return {
+            success: false,
+            message: error instanceof Error ? error.message : "Unknown error",
+          };
+        }
+      }),
+
     // Manually trigger scrape and publish pipeline
     triggerScrape: adminProcedure
       .input(
