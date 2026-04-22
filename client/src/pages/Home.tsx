@@ -175,16 +175,17 @@ export default function Home() {
                           })}
                         </span>
                         {article.sourceUrl && (
-                          <a
-                            href={article.sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.preventDefault()}
-                            className="text-slate-400 hover:text-slate-600 transition-colors"
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              window.open(article.sourceUrl, '_blank');
+                            }}
+                            className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                             title="Original source"
                           >
                             Source
-                          </a>
+                          </button>
                         )}
                       </div>
                     </div>
